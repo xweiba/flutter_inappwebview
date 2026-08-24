@@ -81,7 +81,7 @@ public class WebAuthenticationSession: NSObject, ASWebAuthenticationPresentation
         }
     }
     
-    @available(macOS 10.15, *)
+    @available(macOS 10.14, *)
     public func presentationAnchor(for session: ASWebAuthenticationSession) -> ASPresentationAnchor {
         return NSApplication.shared.windows.first { $0.isKeyWindow } ?? ASPresentationAnchor()
     }
