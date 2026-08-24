@@ -1636,6 +1636,7 @@ public class InAppWebView: WKWebView, WKUIDelegate,
     }
     
     @available(macOS 10.12, *)
+    @MainActor
     public func webView(
         _ webView: WKWebView,
         runOpenPanelWith parameters: WKOpenPanelParameters,
