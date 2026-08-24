@@ -10,6 +10,7 @@ import AuthenticationServices
 import SafariServices
 import FlutterMacOS
 
+@available(macOS 10.15, *)
 public class WebAuthenticationSession: NSObject, ASWebAuthenticationPresentationContextProviding, Disposable {
     static let METHOD_CHANNEL_NAME_PREFIX = "com.pichillilorenzo/flutter_webauthenticationsession_"
     var id: String
@@ -81,7 +82,7 @@ public class WebAuthenticationSession: NSObject, ASWebAuthenticationPresentation
         }
     }
     
-    @available(macOS 10.14, *)
+    @available(macOS 10.15, *)
     public func presentationAnchor(for session: ASWebAuthenticationSession) -> ASPresentationAnchor {
         return NSApplication.shared.windows.first { $0.isKeyWindow } ?? ASPresentationAnchor()
     }
@@ -91,7 +92,7 @@ public class WebAuthenticationSession: NSObject, ASWebAuthenticationPresentation
         channelDelegate?.dispose()
         channelDelegate = nil
         session = nil
-        plugin?.webAuthenticationSessionManager?.sessions[id] = nil
+        (plugin?.webAuthenticationSessionManager as? WebAuthenticationSessionManager)?.sessions[id] = nil
         plugin = nil
     }
     

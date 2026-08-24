@@ -9,6 +9,7 @@ import Foundation
 import AuthenticationServices
 import SafariServices
 
+@available(macOS 10.15, *)
 @objcMembers
 public class WebAuthenticationSessionSettings: ISettings<WebAuthenticationSession> {
     

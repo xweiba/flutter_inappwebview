@@ -12,6 +12,7 @@ import Foundation
 import AVFoundation
 import SafariServices
 
+@available(macOS 10.15, *)
 public class WebAuthenticationSessionManager: ChannelDelegate {
     static let METHOD_CHANNEL_NAME = "com.pichillilorenzo/flutter_webauthenticationsession"
     var plugin: InAppWebViewFlutterPlugin?

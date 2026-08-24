@@ -33,7 +33,7 @@ public class InAppWebViewFlutterPlugin: NSObject, FlutterPlugin {
     var credentialDatabase: CredentialDatabase?
     var inAppBrowserManager: InAppBrowserManager?
     var headlessInAppWebViewManager: HeadlessInAppWebViewManager?
-    var webAuthenticationSessionManager: WebAuthenticationSessionManager?
+    var webAuthenticationSessionManager: Any?
     var printJobManager: PrintJobManager?
     var proxyManager: Any?
     
@@ -54,7 +54,9 @@ public class InAppWebViewFlutterPlugin: NSObject, FlutterPlugin {
             myCookieManager = MyCookieManager(plugin: self)
         }
         myWebStorageManager = MyWebStorageManager(plugin: self)
-        webAuthenticationSessionManager = WebAuthenticationSessionManager(plugin: self)
+        if #available(macOS 10.15, *) {
+            webAuthenticationSessionManager = WebAuthenticationSessionManager(plugin: self)
+        }
         printJobManager = PrintJobManager(plugin: self)
         if #available(macOS 14.0, *) {
             proxyManager = ProxyManager(plugin: self)
@@ -82,8 +84,10 @@ public class InAppWebViewFlutterPlugin: NSObject, FlutterPlugin {
         }
         myWebStorageManager?.dispose()
         myWebStorageManager = nil
-        webAuthenticationSessionManager?.dispose()
-        webAuthenticationSessionManager = nil
+        if #available(macOS 10.15, *) {
+            (webAuthenticationSessionManager as? WebAuthenticationSessionManager)?.dispose()
+            webAuthenticationSessionManager = nil
+        }
         printJobManager?.dispose()
         printJobManager = nil
         if #available(macOS 14.0, *) {

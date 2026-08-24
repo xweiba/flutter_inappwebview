@@ -8,6 +8,7 @@
 import Foundation
 import FlutterMacOS
 
+@available(macOS 10.15, *)
 public class WebAuthenticationSessionChannelDelegate: ChannelDelegate {
     private weak var webAuthenticationSession: WebAuthenticationSession?
     
