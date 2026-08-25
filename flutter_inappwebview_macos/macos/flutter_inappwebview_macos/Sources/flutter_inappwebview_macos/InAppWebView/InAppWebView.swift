@@ -1641,7 +1641,7 @@ public class InAppWebView: WKWebView, WKUIDelegate,
         _ webView: WKWebView,
         runOpenPanelWith parameters: WKOpenPanelParameters,
         initiatedByFrame frame: WKFrameInfo,
-        completionHandler: @escaping ([URL]?) -> Void
+        completionHandler: @escaping @MainActor @Sendable ([URL]?) -> Void
     ) {
         let openPanel = NSOpenPanel()
         currentOpenPanel = openPanel
