@@ -1636,27 +1636,25 @@ public class InAppWebView: WKWebView, WKUIDelegate,
     }
     
     @available(macOS 10.12, *)
-    @MainActor
+    nonisolated
     public func webView(
         _ webView: WKWebView,
         runOpenPanelWith parameters: WKOpenPanelParameters,
         initiatedByFrame frame: WKFrameInfo,
         completionHandler: @escaping @MainActor @Sendable ([URL]?) -> Void
     ) {
-        let openPanel = NSOpenPanel()
-        currentOpenPanel = openPanel
-        openPanel.canChooseFiles = true
-        if #available(macOS 10.13.4, *) {
-            openPanel.canChooseDirectories = parameters.allowsDirectories
-        }
-        openPanel.allowsMultipleSelection = parameters.allowsMultipleSelection
-        openPanel.begin { (result) in
-            if result == .OK {
-                completionHandler(openPanel.urls)
-            } else {
-                completionHandler([])
+        Task { @MainActor in
+            let openPanel = NSOpenPanel()
+            currentOpenPanel = openPanel
+            openPanel.canChooseFiles = true
+            if #available(macOS 10.13.4, *) {
+                openPanel.canChooseDirectories = parameters.allowsDirectories
             }
-            self.currentOpenPanel = nil
+            openPanel.allowsMultipleSelection = parameters.allowsMultipleSelection
+            openPanel.begin { (result) in
+                completionHandler(result == .OK ? openPanel.urls : [])
+                self.currentOpenPanel = nil
+            }
         }
     }
     
