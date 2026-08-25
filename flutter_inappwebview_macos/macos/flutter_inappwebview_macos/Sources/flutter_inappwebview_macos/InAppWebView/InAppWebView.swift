@@ -1645,7 +1645,7 @@ public class InAppWebView: WKWebView, WKUIDelegate,
     ) {
         DispatchQueue.main.async {
             let openPanel = NSOpenPanel()
-            currentOpenPanel = openPanel
+            self.currentOpenPanel = openPanel
             openPanel.canChooseFiles = true
             if #available(macOS 10.13.4, *) {
                 openPanel.canChooseDirectories = parameters.allowsDirectories
