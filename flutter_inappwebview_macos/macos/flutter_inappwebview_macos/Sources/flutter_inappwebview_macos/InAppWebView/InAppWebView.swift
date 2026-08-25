@@ -1643,7 +1643,7 @@ public class InAppWebView: WKWebView, WKUIDelegate,
         initiatedByFrame frame: WKFrameInfo,
         completionHandler: @escaping @MainActor @Sendable ([URL]?) -> Void
     ) {
-        Task { @MainActor in
+        DispatchQueue.main.async {
             let openPanel = NSOpenPanel()
             currentOpenPanel = openPanel
             openPanel.canChooseFiles = true
