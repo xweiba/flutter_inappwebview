@@ -1637,7 +1637,7 @@ public class InAppWebView: WKWebView, WKUIDelegate,
     }
     
     @available(macOS 10.12, *)
-    nonisolated
+    @MainActor
     public func webView(
         _ webView: WKWebView,
         runOpenPanelWith parameters: WKOpenPanelParameters,
@@ -1653,15 +1653,10 @@ public class InAppWebView: WKWebView, WKUIDelegate,
                 openPanel.canChooseDirectories = parameters.allowsDirectories
             }
             openPanel.allowsMultipleSelection = parameters.allowsMultipleSelection
-            let finish: (NSApplication.ModalResponse) -> Void = { result in
+            openPanel.begin { result in
                 self.currentOpenPanelCompletionHandler?(result == .OK ? openPanel.urls : [])
                 self.currentOpenPanelCompletionHandler = nil
                 self.currentOpenPanel = nil
-            }
-            if let window = webView.window {
-                openPanel.beginSheetModal(for: window, completionHandler: finish)
-            } else {
-                openPanel.begin(completionHandler: finish)
             }
         }
     }
