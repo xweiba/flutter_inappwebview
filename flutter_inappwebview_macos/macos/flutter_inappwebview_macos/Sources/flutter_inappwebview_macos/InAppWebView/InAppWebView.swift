@@ -48,6 +48,7 @@ public class InAppWebView: WKWebView, WKUIDelegate,
     var callAsyncJavaScriptBelowMacOS11Results: [String:((Any?) -> Void)] = [:]
     
     var currentOpenPanel: NSOpenPanel?
+    var currentOpenPanelCompletionHandler: (@MainActor @Sendable ([URL]?) -> Void)?
     
     fileprivate var interceptOnlyAsyncAjaxRequestsPluginScript: PluginScript?
     
@@ -1646,13 +1647,15 @@ public class InAppWebView: WKWebView, WKUIDelegate,
         DispatchQueue.main.async {
             let openPanel = NSOpenPanel()
             self.currentOpenPanel = openPanel
+            self.currentOpenPanelCompletionHandler = completionHandler
             openPanel.canChooseFiles = true
             if #available(macOS 10.13.4, *) {
                 openPanel.canChooseDirectories = parameters.allowsDirectories
             }
             openPanel.allowsMultipleSelection = parameters.allowsMultipleSelection
             openPanel.begin { (result) in
-                completionHandler(result == .OK ? openPanel.urls : [])
+                self.currentOpenPanelCompletionHandler?(result == .OK ? openPanel.urls : [])
+                self.currentOpenPanelCompletionHandler = nil
                 self.currentOpenPanel = nil
             }
         }
@@ -2799,6 +2802,8 @@ if(window.\(JavaScriptBridgeJS.get_JAVASCRIPT_BRIDGE_NAME())[\(_callHandlerID)] 
         channelDelegate?.dispose()
         channelDelegate = nil
         runWindowBeforeCreatedCallbacks()
+        currentOpenPanelCompletionHandler?([])
+        currentOpenPanelCompletionHandler = nil
         currentOpenPanel?.cancel(self)
         currentOpenPanel?.close()
         currentOpenPanel = nil
