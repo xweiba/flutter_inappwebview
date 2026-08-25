@@ -1653,10 +1653,15 @@ public class InAppWebView: WKWebView, WKUIDelegate,
                 openPanel.canChooseDirectories = parameters.allowsDirectories
             }
             openPanel.allowsMultipleSelection = parameters.allowsMultipleSelection
-            openPanel.begin { (result) in
+            let finish: (NSApplication.ModalResponse) -> Void = { result in
                 self.currentOpenPanelCompletionHandler?(result == .OK ? openPanel.urls : [])
                 self.currentOpenPanelCompletionHandler = nil
                 self.currentOpenPanel = nil
+            }
+            if let window = webView.window {
+                openPanel.beginSheetModal(for: window, completionHandler: finish)
+            } else {
+                openPanel.begin(completionHandler: finish)
             }
         }
     }
