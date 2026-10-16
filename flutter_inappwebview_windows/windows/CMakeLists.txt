@@ -23,20 +23,41 @@ cmake_policy(VERSION 3.14...3.25)
 # not be changed
 set(PLUGIN_NAME "flutter_inappwebview_windows_plugin")
 
-find_program(NUGET nuget)
-if(NOT NUGET)
-  message(NOTICE "Nuget is not installed! The flutter_inappwebview_windows plugin requires it. Check https://inappwebview.dev/docs/intro#setup-windows")
+# PaoPao: a build machine that cannot reach nuget.org gives the three
+# packages below instead, as `nuget install <id> -Version <version>
+# -ExcludeVersion -OutputDirectory <dir>` leaves them, in <dir> named by
+# FLUTTER_INAPPWEBVIEW_WINDOWS_PACKAGES (a CMake or environment variable).
+# NuGet is then neither needed nor run. Unset, nothing changes.
+if(NOT FLUTTER_INAPPWEBVIEW_WINDOWS_PACKAGES AND DEFINED ENV{FLUTTER_INAPPWEBVIEW_WINDOWS_PACKAGES})
+  file(TO_CMAKE_PATH "$ENV{FLUTTER_INAPPWEBVIEW_WINDOWS_PACKAGES}" FLUTTER_INAPPWEBVIEW_WINDOWS_PACKAGES)
 endif()
 
-add_custom_target(${PROJECT_NAME}_DEPS ALL)
-add_custom_command(
-  TARGET ${PROJECT_NAME}_DEPS PRE_BUILD
-  COMMAND ${NUGET} install Microsoft.Windows.ImplementationLibrary -Version ${WIL_VERSION} -ExcludeVersion -OutputDirectory ${CMAKE_BINARY_DIR}/packages
-  COMMAND ${NUGET} install Microsoft.Windows.CppWinRT -Version ${CPP_WINRT_VERSION} -ExcludeVersion -OutputDirectory ${CMAKE_BINARY_DIR}/packages
-  COMMAND ${NUGET} install Microsoft.Web.WebView2 -Version ${WEBVIEW_VERSION} -ExcludeVersion -OutputDirectory ${CMAKE_BINARY_DIR}/packages
-  COMMAND ${NUGET} install nlohmann.json -Version ${NLOHMANN_JSON_VERSION} -ExcludeVersion -OutputDirectory ${CMAKE_BINARY_DIR}/packages
-  DEPENDS ${NUGET}
-)
+if(FLUTTER_INAPPWEBVIEW_WINDOWS_PACKAGES)
+  set(PACKAGES_DIR "${FLUTTER_INAPPWEBVIEW_WINDOWS_PACKAGES}")
+  foreach(PACKAGE Microsoft.Windows.ImplementationLibrary Microsoft.Web.WebView2 nlohmann.json)
+    if(NOT EXISTS "${PACKAGES_DIR}/${PACKAGE}/build/native/${PACKAGE}.targets")
+      message(FATAL_ERROR "FLUTTER_INAPPWEBVIEW_WINDOWS_PACKAGES: ${PACKAGES_DIR}/${PACKAGE} is missing (needed: Microsoft.Windows.ImplementationLibrary ${WIL_VERSION}, Microsoft.Web.WebView2 ${WEBVIEW_VERSION}, nlohmann.json ${NLOHMANN_JSON_VERSION}).")
+    endif()
+  endforeach()
+  add_custom_target(${PROJECT_NAME}_DEPS ALL)
+else()
+  set(PACKAGES_DIR "${CMAKE_BINARY_DIR}/packages")
+
+  find_program(NUGET nuget)
+  if(NOT NUGET)
+    message(NOTICE "Nuget is not installed! The flutter_inappwebview_windows plugin requires it. Check https://inappwebview.dev/docs/intro#setup-windows")
+  endif()
+
+  add_custom_target(${PROJECT_NAME}_DEPS ALL)
+  add_custom_command(
+    TARGET ${PROJECT_NAME}_DEPS PRE_BUILD
+    COMMAND ${NUGET} install Microsoft.Windows.ImplementationLibrary -Version ${WIL_VERSION} -ExcludeVersion -OutputDirectory ${PACKAGES_DIR}
+    COMMAND ${NUGET} install Microsoft.Windows.CppWinRT -Version ${CPP_WINRT_VERSION} -ExcludeVersion -OutputDirectory ${PACKAGES_DIR}
+    COMMAND ${NUGET} install Microsoft.Web.WebView2 -Version ${WEBVIEW_VERSION} -ExcludeVersion -OutputDirectory ${PACKAGES_DIR}
+    COMMAND ${NUGET} install nlohmann.json -Version ${NLOHMANN_JSON_VERSION} -ExcludeVersion -OutputDirectory ${PACKAGES_DIR}
+    DEPENDS ${NUGET}
+  )
+endif()
 
 # Any new source files that you add to the plugin should be added here.
 list(APPEND PLUGIN_SOURCES
@@ -299,9 +320,9 @@ function(FLUTTER_INAPPWEBVIEW_WINDOWS_APPLY_STANDARD_SETTINGS TARGET)
 endfunction()
 flutter_inappwebview_windows_apply_standard_settings(${PLUGIN_NAME})
 
-target_link_libraries(${PLUGIN_NAME} PRIVATE ${CMAKE_BINARY_DIR}/packages/Microsoft.Web.WebView2/build/native/Microsoft.Web.WebView2.targets)
-target_link_libraries(${PLUGIN_NAME} PRIVATE ${CMAKE_BINARY_DIR}/packages/Microsoft.Windows.ImplementationLibrary/build/native/Microsoft.Windows.ImplementationLibrary.targets)
-target_link_libraries(${PLUGIN_NAME} PRIVATE ${CMAKE_BINARY_DIR}/packages/nlohmann.json/build/native/nlohmann.json.targets)
+target_link_libraries(${PLUGIN_NAME} PRIVATE ${PACKAGES_DIR}/Microsoft.Web.WebView2/build/native/Microsoft.Web.WebView2.targets)
+target_link_libraries(${PLUGIN_NAME} PRIVATE ${PACKAGES_DIR}/Microsoft.Windows.ImplementationLibrary/build/native/Microsoft.Windows.ImplementationLibrary.targets)
+target_link_libraries(${PLUGIN_NAME} PRIVATE ${PACKAGES_DIR}/nlohmann.json/build/native/nlohmann.json.targets)
 
 # Symbols are hidden by default to reduce the chance of accidental conflicts
 # between plugins. This should not be removed; any symbols that should be
