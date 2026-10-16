@@ -217,6 +217,9 @@ flutter_inappwebview_windows_apply_standard_settings(${PLUGIN_NAME})
 target_link_libraries(${PLUGIN_NAME} PRIVATE ${PACKAGES_DIR}/Microsoft.Web.WebView2/build/native/Microsoft.Web.WebView2.targets)
 target_link_libraries(${PLUGIN_NAME} PRIVATE ${PACKAGES_DIR}/Microsoft.Windows.ImplementationLibrary/build/native/Microsoft.Windows.ImplementationLibrary.targets)
 target_link_libraries(${PLUGIN_NAME} PRIVATE ${PACKAGES_DIR}/nlohmann.json/build/native/nlohmann.json.targets)
+# PaoPao: the WebView2 loader is linked into the plugin (WebView2LoaderStatic.lib),
+# so there is no WebView2Loader.dll that must be shipped next to the app.
+set_target_properties(${PLUGIN_NAME} PROPERTIES VS_GLOBAL_WebView2LoaderPreference "Static")
 
 # Symbols are hidden by default to reduce the chance of accidental conflicts
 # between plugins. This should not be removed; any symbols that should be
